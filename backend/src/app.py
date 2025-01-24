@@ -13,7 +13,7 @@ app = FastAPI()
 #    'PUT': 'update',
 #    'DELETE': 'delete',
 # }
-db: List[UserSchema] = []
+db: List[UserInDBSchema] = []
 
 
 @app.get('/', status_code=HTTPStatus.OK)
@@ -37,9 +37,12 @@ def read_users():
     return db
 
 
-@app.put('/users/', status_code=HTTPStatus.OK)
-def update_users():
-    return {'status': 'updated'}
+@app.put('/users/', status_code=HTTPStatus.OK, response_model=UserPublicSchema)
+def update_users(user: UserSchema, id: int):
+    for u in db:
+        if u.id == id:
+            db[db.index(u)] = UserInDBSchema(**user.model_dump(), id=id)
+            return user
 
 
 @app.delete('/users/', status_code=HTTPStatus.OK)
